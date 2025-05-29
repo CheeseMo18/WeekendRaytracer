@@ -1,7 +1,11 @@
+#include "header/general.h"
 #include <iostream>
 #include "header/colour.h"
 #include "header/vec3.h"
 #include "header/ray.h"
+#include "header/hittable.h"
+#include "header/hittableList.h"
+#include "header/shapes/sphere.h"
 
 /* 
 Lerp: linearly blending between two values, usually in the form
@@ -29,13 +33,10 @@ double hitSphere(const point3& center, double radius, const ray& r){
     }
 }
 
-colour ray_colour(const ray& r){
-    auto t = hitSphere(point3(0,0,-1), 0.5, r);
-
-    //Adds normal shading if ray hits sphere
-    if(t > 0.0){
-        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
-        return 0.5 * colour(N.x()+1, N.y()+1, N.z()+1);
+colour ray_colour(const ray& r, const hittable& world){
+    hit_record rec;
+    if(world.hit(r, 0, infinity, rec)){
+        return 0.5 * (rec.normal + colour(1,1,1));
     }
 
     vec3 unitDir = unit_vector(r.direction());
@@ -53,6 +54,11 @@ int main(){
 
     int image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
+
+    //World
+    hittableList world;
+    world.add(make_shared<sphere>(point3(0,0,-1),0.5));
+    world.add(make_shared<sphere>(point3(0,-100.5,-1),100));
 
     //Camera settings
     auto viewport_height = 2.0;
@@ -82,7 +88,7 @@ int main(){
             auto rayDir = pixelCenter - cameraCenter;
             ray r(cameraCenter, rayDir);
 
-            colour pixel_colour = ray_colour(r);
+            colour pixel_colour = ray_colour(r, world);
 
             write_colour(std::cout, pixel_colour);
         }
