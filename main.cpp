@@ -12,10 +12,35 @@ vec3 lerp(double a, vec3 startVal, vec3 endVal){
     return (1.0 - a) * startVal + a * endVal;
 }
 
+/*
+Checks if ray r intersects a sphere using ray-sphere intersection equations
+*/
+double hitSphere(const point3& center, double radius, const ray& r){
+    vec3 oc = center - r.origin();
+    auto a = r.direction().length_squared();
+    auto h = dot(r.direction(), oc);
+    auto c = oc.length_squared() - radius*radius;
+    auto discriminant = h*h - a*c;
+
+    if(discriminant < 0){
+        return -1.0;
+    } else {
+        return (h - std::sqrt(discriminant)) / a;
+    }
+}
+
 colour ray_colour(const ray& r){
+    auto t = hitSphere(point3(0,0,-1), 0.5, r);
+
+    //Adds normal shading if ray hits sphere
+    if(t > 0.0){
+        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
+        return 0.5 * colour(N.x()+1, N.y()+1, N.z()+1);
+    }
+
     vec3 unitDir = unit_vector(r.direction());
     auto a = 0.5 * (unitDir.y() + 1.0);
-    return colour(lerp(a, colour(1.0,1.0,1.0), colour(0.5,0.0,1.0)));
+    return colour(lerp(a, colour(1.0,1.0,1.0), colour(0.5,0.7,1.0)));
 }
 
 
