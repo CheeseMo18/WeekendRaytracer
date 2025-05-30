@@ -7,6 +7,7 @@ class camera{
     public:
         double aspect_ratio = 1.0;
         int image_width = 100;
+        int samplesPerPixel = 10;
 
         void render(const hittable& world){
             initialise();
@@ -16,13 +17,13 @@ class camera{
             for (int j = 0; j < image_height; j++) {
                 std::clog << "\rScanlines remaing: " << (image_height - j) << ' ' << std::flush; 
                 for (int i = 0; i < image_width; i++) {
-                    auto pixelCenter = pixel00Loc + (i * pixelDeltaU) + (j * pixelDeltaV);
-                    auto rayDir = pixelCenter - center;
-                    ray r(center, rayDir);
+                    colour pixelColour(0,0,0);
+                    for(int sample = 0; sample < samplesPerPixel; sample++){
+                        ray r = getRay(i,j);
+                        pixelColour += rayColour(r,world);
+                    }
 
-                    colour pixel_colour = rayColour(r, world);
-
-                    write_colour(std::cout, pixel_colour);
+                    write_colour(std::cout, pixelSampleScales * pixelColour);
                 }
             }
             
@@ -35,10 +36,13 @@ class camera{
         point3 pixel00Loc; //Location of pixel 0,0
         vec3 pixelDeltaU;   //Offset of pixel to the right
         vec3 pixelDeltaV;   //Offset of pixel below
+        double pixelSampleScales;   //Colour scale factor for a sum of pixel samples
 
         void initialise(){
             image_height = int(image_width / aspect_ratio);
             image_height = (image_height < 1) ? 1 : image_height;
+
+            pixelSampleScales = 1.0/samplesPerPixel;
 
             //Camera settings
             auto viewport_height = 2.0;
@@ -68,6 +72,20 @@ class camera{
             vec3 unitDir = unit_vector(r.direction());
             auto a = 0.5 * (unitDir.y() + 1.0);
             return colour(lerp(a, colour(1.0,1.0,1.0), colour(0.5,0.7,1.0)));
+        }
+
+        ray getRay(int i, int j) const{
+            //Construct camera ray from origin pointing at random sample around pixel (i,j)
+            auto offset = sampleSquare();
+            auto pixelSample = pixel00Loc + ((i + offset.x()) * pixelDeltaU) + ((j + offset.y()) * pixelDeltaV);
+            auto rayOrigin = center;
+            auto rayDirection = pixelSample - rayOrigin;
+            return ray(rayOrigin, rayDirection);
+        }
+
+        vec3 sampleSquare() const{
+            //returns the vector to a random point in 0.5 unit square
+            return vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
         }
 };
 

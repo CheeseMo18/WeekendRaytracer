@@ -4,6 +4,7 @@
 //Stores commonly used imports and constants
 
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -19,6 +20,15 @@ inline double degrees_to_radians(double degrees){
     return degrees * pi / 180.0;
 }
 
+inline double randomDouble(){
+    //Returns a random real in [0,1)
+    return std::rand()/(RAND_MAX + 1.0);
+}
+
+inline double randomDouble(double min, double max){
+    //Returns a random real in [min,max)
+    return min + (max-min) * randomDouble();
+}
 
 
 #include "colour.h"
