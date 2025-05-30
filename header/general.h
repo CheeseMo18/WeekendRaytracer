@@ -8,6 +8,7 @@
 #include <limits>
 #include <memory>
 
+
 using std::make_shared;
 using std::shared_ptr;
 
@@ -18,9 +19,21 @@ inline double degrees_to_radians(double degrees){
     return degrees * pi / 180.0;
 }
 
+
+
 #include "colour.h"
+#include "interval.h"
 #include "ray.h"
 #include "vec3.h"
+
+/* 
+Lerp: linearly blending between two values, usually in the form
+of -> blendedVal = (1 - a) * startVal + a * endVal
+where a goes from 0 to 1
+*/
+inline vec3 lerp(double a, vec3 startVal, vec3 endVal){
+    return (1.0 - a) * startVal + a * endVal;
+}
 
 
 #endif
