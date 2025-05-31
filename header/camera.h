@@ -2,6 +2,10 @@
 #define CAMERA_H
 
 #include "hittable.h"
+#include <vector>
+#include <thread>
+
+using namespace std;
 
 class camera{
     public:
@@ -12,23 +16,49 @@ class camera{
         void render(const hittable& world){
             initialise();
 
-            std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+            //Creates thread vector
+            vector<thread> threads(image_height);
+            //Creates frame buffer to store colour data before writing to file
+            vector<vector<colour>> frameBuffer(image_height, vector<colour>(image_width));
+            
+            cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
             for (int j = 0; j < image_height; j++) {
-                std::clog << "\rScanlines remaing: " << (image_height - j) << ' ' << std::flush; 
-                for (int i = 0; i < image_width; i++) {
-                    colour pixelColour(0,0,0);
-                    for(int sample = 0; sample < samplesPerPixel; sample++){
-                        ray r = getRay(i,j);
-                        pixelColour += rayColour(r,world);
-                    }
+                //Creates thread using lambda function: = means pass everything into lambda by copy
+                // except &world, &frameBuffer which we need by reference
+                threads[j] = thread([=, &world, &frameBuffer](){
+                    for (int i = 0; i < image_width; i++) {
+                        colour pixelColour(0,0,0);
+                        for(int sample = 0; sample < samplesPerPixel; sample++){
+                            ray r = getRay(i,j);
+                            pixelColour += rayColour(r,world);
+                        }
 
-                    write_colour(std::cout, pixelSampleScales * pixelColour);
+                        frameBuffer[j][i] = pixelSampleScales * pixelColour;
+                    
+                    }
+                });
+                
+            }
+            
+            //Waits for all threads to finish
+            int count = 0;
+            for(auto& th : threads){
+                clog << "\rScanlines remaing: " << (image_height - count) << ' ' << flush; 
+                th.join();
+                ++count;
+            }
+
+            //Writes framebuffer to file
+            for(int j = 0; j < image_height; j++){
+                for(int i = 0; i < image_width; i++){
+                    write_colour(cout, frameBuffer[j][i]);
                 }
             }
             
-            std::clog << "\rDone                                 \n"; 
+            clog << "\rDone                                 \n"; 
         }
+
 
     private:
         int image_height;   //Rendered image height
