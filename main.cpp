@@ -7,6 +7,7 @@
 #include "header/hittableList.h"
 #include "header/shapes/sphere.h"
 #include "header/camera.h"
+#include "header/timer.h"
 
 /*
 Checks if ray r intersects a sphere using ray-sphere intersection equations
@@ -36,7 +37,12 @@ int main(){
     cam.aspect_ratio = 16.0/9.0;
     cam.image_width = 400;
     cam.samplesPerPixel = 100;
+
+    timer t;
+    t.start();
     cam.render(world);
+    t.end();
+    std::clog<< t.elapsedMilliSeconds() << " ms \n";
 
 
 }
