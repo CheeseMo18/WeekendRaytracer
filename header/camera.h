@@ -12,6 +12,8 @@ class camera{
         double aspect_ratio = 1.0;
         int image_width = 100;
         int samplesPerPixel = 10;
+        int maxDepth = 50; // Max number of ray bounces
+        double gamma = 0.5;
 
         void render(const hittable& world){
             initialise();
@@ -31,7 +33,7 @@ class camera{
                         colour pixelColour(0,0,0);
                         for(int sample = 0; sample < samplesPerPixel; sample++){
                             ray r = getRay(i,j);
-                            pixelColour += rayColour(r,world);
+                            pixelColour += rayColour(r, maxDepth, world);
                         }
 
                         frameBuffer[j][i] = pixelSampleScales * pixelColour;
@@ -93,11 +95,17 @@ class camera{
 
         }
 
-        colour rayColour(const ray& r, const hittable& world) const{
+        colour rayColour(const ray& r, int depth, const hittable& world) const{
+            //If we've exceeded the ray bounce limit, no more light is gathered
+            if(depth <= 0){
+                return colour(0,0,0);
+            }
             hit_record rec;
+
+            //Shadow acne fix = 0.001 causes distortions in render
             if(world.hit(r, interval(0, infinity), rec)){
-                vec3 direction = randomOnHemisphere(rec.normal);
-                return 0.5 * rayColour(ray(rec.p, direction), world);
+                vec3 direction = rec.normal + randomUnitVector();
+                return gamma * rayColour(ray(rec.p, direction), depth-1, world);
             }
 
             vec3 unitDir = unit_vector(r.direction());
