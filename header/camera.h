@@ -96,7 +96,8 @@ class camera{
         colour rayColour(const ray& r, const hittable& world) const{
             hit_record rec;
             if(world.hit(r, interval(0, infinity), rec)){
-                return 0.5 * (rec.normal + colour(1,1,1));
+                vec3 direction = randomOnHemisphere(rec.normal);
+                return 0.5 * rayColour(ray(rec.p, direction), world);
             }
 
             vec3 unitDir = unit_vector(r.direction());
