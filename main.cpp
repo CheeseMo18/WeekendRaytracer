@@ -6,6 +6,7 @@
 #include "header/hittable.h"
 #include "header/hittableList.h"
 #include "header/shapes/sphere.h"
+#include "header/shapes/triangle.h"
 #include "header/camera.h"
 #include "header/timer.h"
 
@@ -30,7 +31,10 @@ double hitSphere(const point3& center, double radius, const ray& r){
 int main(){
     //World
     hittableList world;
-    world.add(make_shared<sphere>(point3(0,0,-1),0.5));
+    //world.add(make_shared<sphere>(point3(10,0,-10),0.5));
+    world.add(make_shared<triangle>(point3(10,0,-10), point3(0,7,-10), point3(-10,0,-10)));
+    //world.add(make_shared<triangle>(point3(-5,0,-10), point3(0,7,-10), point3(10,0,-10)));
+    
     world.add(make_shared<sphere>(point3(0,-100.5,-1),100));
 
     camera cam;

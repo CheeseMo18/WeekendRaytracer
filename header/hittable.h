@@ -11,7 +11,7 @@ class hit_record{
         bool frontFace;
 
         void setFaceNormal(const ray&r, const vec3& outwardNormal){
-            //Sets hit record for normal vector and outwardNoraml is assumed to have unit length
+            //Sets hit record for normal vector and outwardNormal is assumed to have unit length
             frontFace = dot(r.direction(), outwardNormal) < 0;
             normal = frontFace ? outwardNormal : -outwardNormal;
         }

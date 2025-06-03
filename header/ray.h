@@ -11,6 +11,7 @@ class ray{
         const point3& origin() const {return orig;}
         const vec3& direction() const {return dir;}
 
+        // 't' is distance across the ray from the origin, usually means z-axis value for a surface parallel to the camera.
         point3 at(double t) const{
             return orig + t*dir;
         }
